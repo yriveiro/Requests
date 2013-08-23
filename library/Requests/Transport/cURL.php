@@ -223,7 +223,11 @@ class Requests_Transport_cURL implements Requests_Transport {
 			$url = self::format_get($url, $data);
 		}
 		elseif (!empty($data) && !is_string($data)) {
-			$data = http_build_query($data, null, '&');
+			if (!$options['binary']) {
+				$data = http_build_query($data, null, '&');
+			} else {
+				$data = $this->format_binary($data);
+			}
 		}
 
 		switch ($options['type']) {
@@ -333,6 +337,22 @@ class Requests_Transport_cURL implements Requests_Transport {
 			}
 		}
 		return $url;
+	}
+
+	protected static function format_binary($data)
+	{
+		if (!empty($data) && is_array($data)) {
+			$pairs = array();
+
+			foreach($data as $key => $value)
+			{
+				array_push($pairs, sprintf("%s=%s", $key, $value));
+			}
+
+			$data = implode('&', $data);
+		}
+
+		return $data;
 	}
 
 	/**
